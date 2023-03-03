@@ -20,7 +20,7 @@ sudo setfacl -m g:td-agent:4 /var/log/auth.log
 # Copy td-agent config and start service
 sudo mv /tmp/td-agent.conf /etc/td-agent/td-agent.conf
 sudo systemctl start td-agent.service
- sudo systemctl status td-agent.service
+sudo systemctl status td-agent.service
 
 # Verify td-agent logs and tailed paths
 sudo tail -f /var/log/td-agent/td-agent.log
