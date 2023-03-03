@@ -25,4 +25,4 @@ sudo systemctl status td-agent.service
 
 # Verify td-agent logs and tailed paths
 sudo tail -f /var/log/td-agent/td-agent.log
-cat /var/log/td-agent/td-agent.log |grep "tailing paths"
+cat /var/log/td-agent/td-agent.log | grep "tailing paths"
