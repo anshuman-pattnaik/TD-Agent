@@ -1,0 +1,10 @@
+/var/log/audit-alt.log {
+    rotate 1
+    missingok
+    copytruncate
+    compress
+    notifempty
+    maxsize 100M
+    daily
+    create 0644 root root
+}

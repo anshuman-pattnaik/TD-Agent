@@ -1,0 +1,131 @@
+#### Remove any existing rules
+-D
+  
+#### Buffer Size
+## Feel free to increase this if the machine panic's
+ 
+-b 65536
+ 
+# Failure Mode: always print a failure message
+-f 1
+ 
+# Ignore errors: do not panic or halt the system if an error occurs
+-i
+ 
+# Generate at most 100 audit messages per second
+-r 100
+ 
+# Monitor attempts to access audit logs
+-a always,exit -F dir=/var/log/audit/ -F perm=r -F auid!=unset -k access_audit_trail
+ 
+# Monitor modifications to audit configuration
+-w /etc/audit/ -p wa -k access_audit_trail
+-w /etc/libaudit.conf -p wa -k access_audit_trail
+-w /etc/audisp/ -p wa -k access_audit_trail
+ 
+# Monitor Audit Tool Executions
+-a always,exit -F path=/sbin/ausearch -F perm=x -k access_audit_trail
+-a always,exit -F path=/sbin/aureport -F perm=x -k access_audit_trail
+-a always,exit -F path=/usr/bin/aulast -F perm=x -k access_audit_trail
+-a always,exit -F path=/usr/bin/auvirt -F perm=x -k access_audit_trail
+ 
+# Ignore SELinux AVC records
+-a always,exclude -F msgtype=AVC
+ 
+# Ignore current working directory records
+-a always,exclude -F msgtype=CWD
+ 
+# Ignore EOE records (End Of Event, not needed)
+-a always,exclude -F msgtype=EOE
+ 
+# Ignore Cron Jobs
+ 
+-a user,never -F subj_type=crond_t
+-a exit,never -F subj_type=crond_t
+ 
+# Ignore Crypto Messages
+-a always,exclude -F msgtype=CRYPTO_KEY_USER
+ 
+# Kernel parameters
+-w /etc/sysctl.conf -p wa -k sysctl_modification
+ 
+# Kernel module loading and unloading
+ 
+-a always,exit -F perm=x -F auid!=-1 -F path=/sbin/insmod -k module_modification
+-a always,exit -F perm=x -F auid!=-1 -F path=/sbin/modprobe -k module_modification
+-a always,exit -F perm=x -F auid!=-1 -F path=/sbin/rmmod -k module_modification
+-a always,exit -F arch=b64 -S finit_module -S init_module -S delete_module -F auid!=-1 -k module_modification
+-a always,exit -F arch=b32 -S finit_module -S init_module -S delete_module -F auid!=-1 -k module_modification
+ 
+# Modprobe configuration
+ 
+-w /etc/modules-load.d/ -p wa -k module_modification
+-w /etc/modprobe.d/ -p wa -k module_modification
+-w /etc/modules -p wa -k module_modification
+ 
+# Login Logs Monitoring
+ 
+-w /etc/login.defs -p wa -k login_modification
+-w /etc/securetty -p wa -k login_modification
+-w /var/log/faillog -p wa -k login_modification
+-w /var/log/lastlog -p wa -k login_modification
+-w /var/log/tallylog -p wa -k login_modification
+ 
+# PAM Configuration
+ 
+-w /etc/pam.d/ -p wa -k pam_modfication
+-w /etc/security/limits.conf -p wa  -k pam_modfication
+-w /etc/security/pam_env.conf -p wa -k pam_modfication
+-w /etc/security/namespace.conf -p wa -k pam_modfication
+-w /etc/security/namespace.init -p wa -k pam_modfication
+ 
+ # LDAP Configuration
+-w /etc/openldap/ -p wa -k ldap_modification
+ 
+# SSH Configuration
+-w /etc/ssh/ -k sshd_modification
+ 
+# Systemd
+ 
+-w /bin/systemctl -p x -k systemd_modification
+-w /etc/systemd/ -p wa -k systemd_modification
+ 
+# Monitor account switching
+ 
+-w /bin/su -p x -k elevated_privs_session
+-w /etc/sudoers -p rw -k elevated_privs_session
+-w /bin/sudo -p x -k elevated_privs_session
+ 
+# (PCI-DSS 10.2.5.c) All changes, additions, or deletions to any account are logged
+ 
+-w /etc/group -p wa -k etc_group_modification
+-w /etc/passwd -p wa -k etc_passwd_modification
+-w /etc/gshadow -k etc_gshadow_modification
+-w /etc/shadow -k etc_shadow_modification
+-w /etc/security/opasswd -k etc_opasswd_modification
+ 
+# (PCI-DSS 10.2.5.b) All elevation of privileges get logged
+ 
+-a always,exit -F arch=b64 -S setuid -F a0=0 -F path=/bin/su -k elevated_privs_session
+-a always,exit -F arch=b64 -S execve -C uid!=euid -F euid=0 -k elevated_privs_setuid
+-a always,exit -F arch=b64 -S setresuid -F a0=0 -F path=/bin/sudo -k elevated_privs_session
+-a always,exit -F arch=b32 -S setresuid -F a0=0 -F path=/bin/sudo -k elevated_privs_session
+ 
+# Suspicious Behavior - Reconnaissance
+ 
+-w /usr/bin/whoami -p x -k recon
+-w /etc/issue -p r -k recon
+-w /etc/hostname -p r -k recon
+ 
+# Suspicious activity
+ 
+-w /sbin/iptables -p x -k suspicious_activity
+-w /sbin/ifconfig -p x -k suspicious_activity
+-w /bin/wget -p x -k suspicious_activity
+-w /bin/curl -p x -k suspicious_activity
+-w /usr/local/bin/nc -p x -k suspicious_activity
+-w /bin/ncat -p x -k suspicious_activity
+-w /bin/socat -p x -k suspicious_activity
+-w /bin/nmap -p x -k suspicious_activity
+-w /sbin/tcpdump -p x -k suspicious_activity
+-w /bin/ldapsearch -p x -k suspicious_activity
